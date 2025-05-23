@@ -294,9 +294,7 @@ open http://$VM_IP:3000  # Username: admin, Password: prom-operator
 open http://$VM_IP:9090
 ```
 
-### 01:30 – 02:00: Configure Ingress (Production Access)
-
-#### 1. Create Ingress for External Access
+### 01:30 – 02:00: Configure Load Balancer & Ingress (Production Access)#### 1. Enable Azure Load Balancer for Services (Recommended)```bash# Update services to use Azure Load Balancer automaticallysed -i 's/type: ClusterIP/type: LoadBalancer/g' k8s/product-service.yamlsed -i 's/type: ClusterIP/type: LoadBalancer/g' k8s/inventory-service.yamlsed -i 's/type: ClusterIP/type: LoadBalancer/g' k8s/order-service.yaml# Apply updated manifestskubectl apply -f k8s/product-service.yamlkubectl apply -f k8s/inventory-service.yamlkubectl apply -f k8s/order-service.yaml# Wait for Azure to provision Load Balancers (this may take 2-3 minutes)echo "Waiting for Azure Load Balancers to be provisioned..."kubectl get services --watch# Get external IPs (run after Load Balancers are ready)PRODUCT_IP=$(kubectl get service product-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')INVENTORY_IP=$(kubectl get service inventory-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')ORDER_IP=$(kubectl get service order-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')echo "🎉 Azure Load Balancers Ready!"echo "Product Service: http://$PRODUCT_IP:8080"echo "Inventory Service: http://$INVENTORY_IP:8081"echo "Order Service: http://$ORDER_IP:8082"# Test load balanced servicescurl http://$PRODUCT_IP:8080/actuator/healthcurl http://$INVENTORY_IP:8081/actuator/healthcurl http://$ORDER_IP:8082/actuator/health```#### 2. Create Ingress for External Access (Alternative/Additional)
 ```bash
 # Create ingress configuration
 cat << EOF | kubectl apply -f -

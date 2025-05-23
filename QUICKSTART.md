@@ -25,21 +25,7 @@ open http://localhost:3000  # Grafana (admin/admin)
 open http://localhost:9090  # Prometheus
 ```
 
-## Option 2: Kubernetes (Production-Like) 🏭**Note**: This uses production patterns (auto-scaling, health checks, resource limits) but isn't fully production-ready. See [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for enterprise requirements.```bash# Prerequisites: kubectl and a K8s cluster# Deploy everythingkubectl apply -f k8s/
-
-# Wait for pods to be ready
-kubectl wait --for=condition=ready pod --all --timeout=300s
-
-# Port forward to access services
-kubectl port-forward svc/product-service 8080:8080 &
-kubectl port-forward svc/inventory-service 8081:8081 &
-kubectl port-forward svc/order-service 8082:8082 &
-
-# Test services
-curl http://localhost:8080/actuator/health
-curl http://localhost:8081/actuator/health
-curl http://localhost:8082/actuator/health
-```
+## Option 2: Kubernetes (Production-Like) 🏭**Note**: This uses production patterns (auto-scaling, health checks, resource limits) but isn't fully production-ready. See [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for enterprise requirements.```bash# Prerequisites: kubectl and a K8s cluster# Deploy everythingkubectl apply -f k8s/# Wait for pods to be readykubectl wait --for=condition=ready pod --all --timeout=300s# Port forward to access serviceskubectl port-forward svc/product-service 8080:8080 &kubectl port-forward svc/inventory-service 8081:8081 &kubectl port-forward svc/order-service 8082:8082 &# Test servicescurl http://localhost:8080/actuator/healthcurl http://localhost:8081/actuator/healthcurl http://localhost:8082/actuator/health```### Option 2b: Kubernetes with Load Balancer (Azure/AWS/GCP) ⚖️```bash# Deploy with Azure/Cloud Load Balancers (auto-provisions external IPs)kubectl apply -f k8s/product-service-loadbalancer.yaml# Wait for external IPs to be provisioned (may take 2-3 minutes)kubectl get services --watch# Get external IPs and testPRODUCT_IP=$(kubectl get service product-service-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')INVENTORY_IP=$(kubectl get service inventory-service-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')ORDER_IP=$(kubectl get service order-service-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')# Test load balanced servicescurl http://$PRODUCT_IP:8080/actuator/healthcurl http://$INVENTORY_IP:8081/actuator/healthcurl http://$ORDER_IP:8082/actuator/health```
 
 ## Option 3: Local Development (No Docker)
 
