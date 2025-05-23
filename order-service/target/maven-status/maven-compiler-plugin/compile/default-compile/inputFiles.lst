@@ -1,0 +1,11 @@
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\config\WebClientConfig.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\dto\OrderRequest.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\dto\OrderResponse.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\OrderServiceApplication.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\dto\OrderLineItemsDto.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\model\Order.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\model\OrderLineItems.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\repository\OrderRepository.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\service\OrderService.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\dto\InventoryResponse.java
+F:\githubhub\hamlaoui_devops\SpringBoot-Microservices-Order-Management-System\order-service\src\main\java\com\orderservice\controller\OrderController.java
