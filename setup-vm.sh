@@ -1,12 +1,22 @@
 #!/bin/bash
 
-# 🚀 ONE-LINER VM SETUP SCRIPT
+# 🚀 VM SETUP SCRIPT FOR PRODUCTION-READY MICROSERVICES
 # Complete production-ready microservices setup on fresh Linux VM
-# Usage: curl -sSL https://raw.githubusercontent.com/your-username/SpringBoot-Microservices-Order-Management-System/main/setup-vm.sh | bash
+# 
+# Prerequisites: 
+# 1. Clone this repository first
+# 2. Run from the repository directory
+# 3. Fresh Ubuntu 22.04 VM
+#
+# Usage: 
+#   git clone https://github.com/your-username/SpringBoot-Microservices-Order-Management-System.git
+#   cd SpringBoot-Microservices-Order-Management-System
+#   chmod +x setup-vm.sh
+#   ./setup-vm.sh
 
 set -e  # Exit on any error
 
-echo "🚀 MICROSERVICES VM SETUP - ONE-LINER INSTALLER"
+echo "🚀 MICROSERVICES VM SETUP - PRODUCTION INSTALLER"
 echo "================================================"
 echo "This script will install:"
 echo "✅ MicroK8s + required add-ons"
@@ -17,48 +27,54 @@ echo "✅ Monitoring (Prometheus + Grafana)"
 echo "✅ Load balancer + external access"
 echo ""
 
+# Check if we're in the right directory
+if [ ! -f "emergency-production-fix.sh" ] || [ ! -d "k8s" ]; then
+    echo "❌ Error: This script must be run from the SpringBoot-Microservices-Order-Management-System directory"
+    echo ""
+    echo "Please run:"
+    echo "git clone https://github.com/your-username/SpringBoot-Microservices-Order-Management-System.git"
+    echo "cd SpringBoot-Microservices-Order-Management-System"
+    echo "chmod +x setup-vm.sh"
+    echo "./setup-vm.sh"
+    exit 1
+fi
+
 # Get system info
 echo "🔍 System Info:"
 echo "OS: $(lsb_release -d | cut -f2)"
 echo "CPU: $(nproc) cores"
 echo "RAM: $(free -h | awk '/^Mem:/ {print $2}')"
 echo "Disk: $(df -h / | awk 'NR==2 {print $4}') available"
+echo "Directory: $(pwd)"
 echo ""
 
 # Update system
-echo "📦 STEP 1/6: Updating system packages..."
+echo "📦 STEP 1/5: Updating system packages..."
 sudo apt update -qq
-sudo apt install -y curl wget git htop docker.io > /dev/null 2>&1
+sudo apt install -y curl wget git htop docker.io jq > /dev/null 2>&1
 echo "✅ System updated"
 
 # Install MicroK8s
-echo "☸️  STEP 2/6: Installing MicroK8s..."
+echo "☸️  STEP 2/5: Installing MicroK8s..."
 sudo snap install microk8s --classic --channel=1.29/stable > /dev/null 2>&1
 
 # Configure MicroK8s
-echo "⚙️  STEP 3/6: Configuring MicroK8s..."
+echo "⚙️  STEP 3/5: Configuring MicroK8s..."
 sudo usermod -a -G microk8s $USER
 sudo chown -R $USER ~/.kube 2>/dev/null || true
 
 # Enable add-ons
-echo "🔌 STEP 4/6: Enabling MicroK8s add-ons..."
+echo "🔌 STEP 4/5: Enabling MicroK8s add-ons..."
 sudo microk8s enable dns registry ingress prometheus storage --wait > /dev/null 2>&1
 
 # Set up kubectl alias
 echo "alias kubectl='sudo microk8s kubectl'" >> ~/.bashrc
 
-# Clone repository
-echo "📁 STEP 5/6: Downloading production-ready microservices..."
-if [ -d "SpringBoot-Microservices-Order-Management-System" ]; then
-    cd SpringBoot-Microservices-Order-Management-System
-    git pull origin main > /dev/null 2>&1
-else
-    git clone https://github.com/hamlaoui/SpringBoot-Microservices-Order-Management-System.git > /dev/null 2>&1
-    cd SpringBoot-Microservices-Order-Management-System
-fi
+# Deploy production microservices using existing scripts
+echo "🚀 STEP 5/5: Deploying production microservices..."
 
-# Deploy production microservices
-echo "🚀 STEP 6/6: Deploying production microservices..."
+# Make sure scripts are executable
+chmod +x *.sh
 
 # Deploy persistent volumes
 sudo microk8s kubectl apply -f k8s/persistent-volumes.yaml > /dev/null 2>&1
@@ -168,6 +184,9 @@ echo "sudo microk8s kubectl exec deployment/mysql -- mysql -u root -pSecureRootP
 echo ""
 echo "# Run manual backup:"
 echo "sudo microk8s kubectl create job --from=cronjob/mysql-backup manual-backup-\$(date +%s)"
+echo ""
+echo "# Quick health check:"
+echo "./local-test.sh"
 echo ""
 
 echo "🎯 YOUR PRODUCTION-READY MICROSERVICES ARE NOW RUNNING!"

@@ -50,15 +50,40 @@ echo "🌐 Your VM IP: $VM_IP"
 # SSH into your new VM
 ssh azureuser@$VM_IP
 
-# Update system
+# Update system and install basics
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl wget git htop docker.io
+sudo apt install -y curl wget git htop docker.io jq
 ```
 
-### **Step 3: Install MicroK8s (10 minutes)**
+### **Step 3: Clone Production-Ready Repository (2 minutes)**
 
 ```bash
-# Install MicroK8s
+# Clone the repository with all production fixes
+git clone https://github.com/your-username/SpringBoot-Microservices-Order-Management-System.git
+cd SpringBoot-Microservices-Order-Management-System
+
+# Verify production files are present
+echo "🔍 Production files available:"
+ls k8s/*production* k8s/persistent* k8s/secrets* k8s/backup* *.sh
+
+# Make scripts executable
+chmod +x *.sh
+```
+
+### **Step 4: Install MicroK8s (10 minutes)**
+
+```bash
+# Option A: Use the automated VM setup script
+./setup-vm.sh
+
+# This will handle everything automatically!
+# Skip to Step 8 for verification if using this option.
+```
+
+**OR if you prefer manual control:**
+
+```bash
+# Option B: Manual MicroK8s installation
 sudo snap install microk8s --classic --channel=1.29/stable
 
 # Add user to microk8s group
@@ -75,17 +100,6 @@ microk8s status --wait-ready
 # Set up kubectl alias
 echo "alias kubectl='microk8s kubectl'" >> ~/.bashrc
 source ~/.bashrc
-```
-
-### **Step 4: Clone Your Production-Ready Code (2 minutes)**
-
-```bash
-# Clone the repository with all production fixes
-git clone https://github.com/your-username/SpringBoot-Microservices-Order-Management-System.git
-cd SpringBoot-Microservices-Order-Management-System
-
-# Verify production files are present
-ls k8s/*production* k8s/persistent* k8s/secrets* k8s/backup*
 ```
 
 ### **Step 5: Deploy Production-Ready Microservices (15 minutes)**
@@ -160,7 +174,7 @@ kubectl create job --from=cronjob/mysql-backup test-backup-$(date +%s)
 ## 🎯 **Why This is EASY**
 
 ### **1. Automated Production Fixes** ✅
-- One script (`emergency-production-fix.sh`) handles all critical setup
+- Scripts (`setup-vm.sh`, `emergency-production-fix.sh`) handle all critical setup
 - No manual configuration needed
 - Built-in verification and testing
 
@@ -169,20 +183,26 @@ kubectl create job --from=cronjob/mysql-backup test-backup-$(date +%s)
 - Production security already configured
 - Monitoring pre-integrated
 
-### **3. Step-by-step Guidance** ✅
-- Copy-paste commands
-- Clear verification steps
-- Troubleshooting included
+### **3. Local Control** ✅
+- Clone repo to see exactly what you're running
+- Modify scripts if needed
+- Step-by-step visibility
 
 ---
 
-## 💡 **Even Easier Alternative: One-Liner Setup**
+## 💡 **Super Simple Approach: Two Commands**
 
 ```bash
-# After SSH into fresh VM, run this single command:
-curl -sSL https://raw.githubusercontent.com/your-username/SpringBoot-Microservices-Order-Management-System/main/setup-vm.sh | bash
+# After SSH into fresh VM:
 
-# This would install everything automatically!
+# 1. Clone repository
+git clone https://github.com/your-username/SpringBoot-Microservices-Order-Management-System.git
+cd SpringBoot-Microservices-Order-Management-System
+
+# 2. Run automated setup
+chmod +x setup-vm.sh && ./setup-vm.sh
+
+# That's it! Everything installs automatically with full visibility.
 ```
 
 ## 🆚 **VM Setup vs AKS Comparison**
@@ -190,12 +210,13 @@ curl -sSL https://raw.githubusercontent.com/your-username/SpringBoot-Microservic
 | Aspect | Fresh VM Setup | AKS (Managed) |
 |--------|----------------|---------------|
 | **Setup Time** | 45-60 minutes | 30 minutes |
-| **Difficulty** | Easy (copy-paste) | Very Easy (fewer commands) |
+| **Difficulty** | Easy (clone + run script) | Very Easy (fewer commands) |
 | **Learning** | High (you see everything) | Medium (abstracted) |
 | **Cost** | ~$150/month | ~$140/month |
 | **Management** | Manual updates | Fully managed |
 | **Scaling** | Manual | Automatic |
 | **Production Ready** | Yes (with your fixes) | Yes (enterprise-grade) |
+| **Control** | Full (local scripts) | Limited (managed service) |
 
 ---
 
@@ -214,6 +235,9 @@ kubectl get events --sort-by='.lastTimestamp'
 sudo ufw allow 8080:8082/tcp
 sudo ufw allow 3000/tcp
 sudo ufw allow 9090/tcp
+
+# If scripts aren't executable:
+chmod +x *.sh
 
 # If emergency script fails:
 # Just run the manual commands step by step from the script
@@ -235,13 +259,34 @@ After setup, you should have:
 
 ---
 
+## 🔍 **What Each Script Does**
+
+### **`setup-vm.sh`** - Complete automated setup
+- Installs and configures MicroK8s
+- Deploys all production-ready components
+- Sets up monitoring and external access
+- Runs verification tests
+
+### **`emergency-production-fix.sh`** - Production fixes only
+- Adds persistent storage
+- Creates secure secrets
+- Deploys production databases
+- Sets up automated backups
+
+### **`local-test.sh`** - Quick testing
+- Tests all service endpoints
+- Checks database connectivity
+- Verifies monitoring setup
+
+---
+
 ## 🚀 **Ready to Start?**
 
 **Your setup is actually EASIER than most tutorials because:**
 
-1. **All production fixes are automated** (one script does everything)
-2. **No complex configuration** (everything pre-built)
-3. **Built-in verification** (tells you if something's wrong)
-4. **Complete documentation** (multiple guides available)
+1. **All production fixes are automated** (scripts do everything)
+2. **Full transparency** (clone repo to see all code)
+3. **No complex configuration** (everything pre-built)
+4. **Built-in verification** (tells you if something's wrong)
 
-**Just follow the 8 steps above, and you'll have production-ready microservices in under an hour!** 🎯 
+**Just clone the repo and run the setup script - production-ready microservices in under an hour!** 🎯 
