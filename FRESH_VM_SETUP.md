@@ -59,8 +59,8 @@ sudo apt install -y curl wget git htop docker.io jq
 
 ```bash
 # Clone the repository with all production fixes
-git clone https://github.com/your-username/SpringBoot-Microservices-Order-Management-System.git
-cd SpringBoot-Microservices-Order-Management-System
+git clone https://github.com/ettomarett/hamlaoui-devops.git
+cd hamlaoui-devops
 
 # Verify production files are present
 echo "🔍 Production files available:"
@@ -196,8 +196,8 @@ kubectl create job --from=cronjob/mysql-backup test-backup-$(date +%s)
 # After SSH into fresh VM:
 
 # 1. Clone repository
-git clone https://github.com/your-username/SpringBoot-Microservices-Order-Management-System.git
-cd SpringBoot-Microservices-Order-Management-System
+git clone https://github.com/ettomarett/hamlaoui-devops.git
+cd hamlaoui-devops
 
 # 2. Run automated setup
 chmod +x setup-vm.sh && ./setup-vm.sh
