@@ -1,0 +1,196 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mysql-backup
+  labels:
+    app: mysql-backup
+    component: backup
+spec:
+  schedule: "0 2 * * *"  # Daily at 2:00 AM
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: mysql-backup
+            component: backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: mysql-backup
+            image: mysql:8.0
+            command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Starting MySQL backup at $(date)"
+              BACKUP_FILE="/backup/mysql-backup-$(date +%Y%m%d-%H%M%S).sql"
+              mysqldump -h mysql -u root -p$MYSQL_ROOT_PASSWORD \
+                --single-transaction \
+                --routines \
+                --triggers \
+                --all-databases > $BACKUP_FILE
+              if [ $? -eq 0 ]; then
+                echo "Backup successful: $BACKUP_FILE"
+                gzip $BACKUP_FILE
+                # Keep only last 7 days of backups
+                find /backup -name "mysql-backup-*.sql.gz" -mtime +7 -delete
+                echo "Backup completed at $(date)"
+              else
+                echo "Backup failed!"
+                exit 1
+              fi
+            env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: root-password
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "200m"
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-storage
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongodb-backup
+  labels:
+    app: mongodb-backup
+    component: backup
+spec:
+  schedule: "0 3 * * *"  # Daily at 3:00 AM
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: mongodb-backup
+            component: backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: mongodb-backup
+            image: mongo:5.0
+            command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Starting MongoDB backup at $(date)"
+              BACKUP_DIR="/backup/mongodb-backup-$(date +%Y%m%d-%H%M%S)"
+              mongodump --host mongodb:27017 \
+                --username $MONGO_INITDB_ROOT_USERNAME \
+                --password $MONGO_INITDB_ROOT_PASSWORD \
+                --authenticationDatabase admin \
+                --out $BACKUP_DIR
+              if [ $? -eq 0 ]; then
+                echo "Backup successful: $BACKUP_DIR"
+                tar -czf "${BACKUP_DIR}.tar.gz" -C /backup "$(basename $BACKUP_DIR)"
+                rm -rf $BACKUP_DIR
+                # Keep only last 7 days of backups
+                find /backup -name "mongodb-backup-*.tar.gz" -mtime +7 -delete
+                echo "Backup completed at $(date)"
+              else
+                echo "Backup failed!"
+                exit 1
+              fi
+            env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: root-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: root-password
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "200m"
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-storage
+---
+# Manual backup job template (run on-demand)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: manual-mysql-backup
+  labels:
+    app: mysql-backup
+    component: backup
+    type: manual
+spec:
+  template:
+    metadata:
+      labels:
+        app: mysql-backup
+        component: backup
+        type: manual
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: mysql-backup
+        image: mysql:8.0
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Starting MANUAL MySQL backup at $(date)"
+          BACKUP_FILE="/backup/mysql-manual-backup-$(date +%Y%m%d-%H%M%S).sql"
+          mysqldump -h mysql -u root -p$MYSQL_ROOT_PASSWORD \
+            --single-transaction \
+            --routines \
+            --triggers \
+            --all-databases > $BACKUP_FILE
+          if [ $? -eq 0 ]; then
+            echo "Manual backup successful: $BACKUP_FILE"
+            gzip $BACKUP_FILE
+            echo "Manual backup completed at $(date)"
+          else
+            echo "Manual backup failed!"
+            exit 1
+          fi
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: root-password
+        volumeMounts:
+        - name: backup-storage
+          mountPath: /backup
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+      volumes:
+      - name: backup-storage
+        persistentVolumeClaim:
+          claimName: backup-storage 
