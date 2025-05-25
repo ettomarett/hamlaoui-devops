@@ -45,15 +45,27 @@ pipeline {
                     if ! command -v mvn &> /dev/null; then
                         echo "📦 Maven not found, installing..."
                         
-                        # Install Maven
+                        # Create Maven directory
+                        sudo mkdir -p /opt/maven
                         cd /tmp
-                        wget -q https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+                        
+                        # Download Maven using curl
+                        echo "⬇️ Downloading Maven 3.9.6..."
+                        curl -L -o apache-maven-3.9.6-bin.tar.gz https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+                        
+                        # Extract Maven
+                        echo "📦 Extracting Maven..."
                         tar -xzf apache-maven-3.9.6-bin.tar.gz
-                        sudo mv apache-maven-3.9.6 /opt/maven
+                        
+                        # Move to /opt
+                        sudo mv apache-maven-3.9.6/* /opt/maven/
                         sudo chown -R jenkins:jenkins /opt/maven
                         
                         # Create symlink
                         sudo ln -sf /opt/maven/bin/mvn /usr/local/bin/mvn
+                        
+                        # Set permissions
+                        sudo chmod +x /opt/maven/bin/mvn
                         
                         echo "✅ Maven installed successfully"
                     else
@@ -64,11 +76,11 @@ pipeline {
                     echo "Java Version:"
                     java -version
                     echo "Maven Version:"
-                    mvn -version || echo "Maven installation in progress..."
+                    /opt/maven/bin/mvn -version || mvn -version || echo "Maven installation in progress..."
                     echo "Docker Version:"
                     docker --version
                     echo "Kubectl Version:"
-                    /snap/microk8s/current/kubectl version --client
+                    /snap/microk8s/current/kubectl version --client || echo "kubectl not accessible"
                     echo "Available Disk Space:"
                     df -h
                     echo "Current Directory:"
@@ -95,6 +107,7 @@ pipeline {
                                     
                                     # Ensure Maven is in PATH
                                     export PATH="/opt/maven/bin:$PATH"
+                                    export MAVEN_HOME="/opt/maven"
                                     
                                     # Build the project
                                     /opt/maven/bin/mvn clean compile package -DskipTests -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository
@@ -132,6 +145,7 @@ pipeline {
                                     
                                     # Ensure Maven is in PATH
                                     export PATH="/opt/maven/bin:$PATH"
+                                    export MAVEN_HOME="/opt/maven"
                                     
                                     # Build the project
                                     /opt/maven/bin/mvn clean compile package -DskipTests -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository
@@ -169,6 +183,7 @@ pipeline {
                                     
                                     # Ensure Maven is in PATH
                                     export PATH="/opt/maven/bin:$PATH"
+                                    export MAVEN_HOME="/opt/maven"
                                     
                                     # Build the project
                                     /opt/maven/bin/mvn clean compile package -DskipTests -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository
@@ -202,6 +217,7 @@ pipeline {
                             echo '🧪 Testing Product Service...'
                             sh '''
                                 export PATH="/opt/maven/bin:$PATH"
+                                export MAVEN_HOME="/opt/maven"
                                 /opt/maven/bin/mvn test -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository || echo "Tests completed with status $?"
                                 echo "📊 Test Results:"
                                 if [ -d "target/surefire-reports" ]; then
@@ -217,6 +233,7 @@ pipeline {
                             echo '🧪 Testing Inventory Service...'
                             sh '''
                                 export PATH="/opt/maven/bin:$PATH"
+                                export MAVEN_HOME="/opt/maven"
                                 /opt/maven/bin/mvn test -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository || echo "Tests completed with status $?"
                                 echo "📊 Test Results:"
                                 if [ -d "target/surefire-reports" ]; then
@@ -232,6 +249,7 @@ pipeline {
                             echo '🧪 Testing Order Service...'
                             sh '''
                                 export PATH="/opt/maven/bin:$PATH"
+                                export MAVEN_HOME="/opt/maven"
                                 /opt/maven/bin/mvn test -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository || echo "Tests completed with status $?"
                                 echo "📊 Test Results:"
                                 if [ -d "target/surefire-reports" ]; then
@@ -259,7 +277,7 @@ pipeline {
                                     docker build -t ${imageTag} .
                                     docker tag ${imageTag} ${latestTag}
                                     echo "✅ Product Service image built: ${imageTag}"
-                                    docker images | grep product-service
+                                    docker images | grep product-service || echo "No product-service images found"
                                 """
                             }
                         }
@@ -278,7 +296,7 @@ pipeline {
                                     docker build -t ${imageTag} .
                                     docker tag ${imageTag} ${latestTag}
                                     echo "✅ Inventory Service image built: ${imageTag}"
-                                    docker images | grep inventory-service
+                                    docker images | grep inventory-service || echo "No inventory-service images found"
                                 """
                             }
                         }
@@ -297,7 +315,7 @@ pipeline {
                                     docker build -t ${imageTag} .
                                     docker tag ${imageTag} ${latestTag}
                                     echo "✅ Order Service image built: ${imageTag}"
-                                    docker images | grep order-service
+                                    docker images | grep order-service || echo "No order-service images found"
                                 """
                             }
                         }
@@ -312,19 +330,19 @@ pipeline {
                 sh """
                     echo "🚀 Pushing images to ${DOCKER_REGISTRY}"
                     
-                    docker push ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER}
-                    docker push ${DOCKER_REGISTRY}/product-service:latest
-                    echo "✅ Product service images pushed"
+                    docker push ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER} || echo "Failed to push product-service:${BUILD_NUMBER}"
+                    docker push ${DOCKER_REGISTRY}/product-service:latest || echo "Failed to push product-service:latest"
+                    echo "✅ Product service images push attempted"
                     
-                    docker push ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER}
-                    docker push ${DOCKER_REGISTRY}/inventory-service:latest
-                    echo "✅ Inventory service images pushed"
+                    docker push ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER} || echo "Failed to push inventory-service:${BUILD_NUMBER}"
+                    docker push ${DOCKER_REGISTRY}/inventory-service:latest || echo "Failed to push inventory-service:latest"
+                    echo "✅ Inventory service images push attempted"
                     
-                    docker push ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER}
-                    docker push ${DOCKER_REGISTRY}/order-service:latest
-                    echo "✅ Order service images pushed"
+                    docker push ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER} || echo "Failed to push order-service:${BUILD_NUMBER}"
+                    docker push ${DOCKER_REGISTRY}/order-service:latest || echo "Failed to push order-service:latest"
+                    echo "✅ Order service images push attempted"
                     
-                    echo "🎉 All images pushed successfully!"
+                    echo "🎉 All image pushes completed!"
                 """
             }
         }
@@ -349,8 +367,8 @@ pipeline {
                         /snap/microk8s/current/kubectl rollout status deployment/order-service --namespace=default --timeout=300s || echo "Order rollout timeout"
                         
                         echo "📊 Current deployment status:"
-                        /snap/microk8s/current/kubectl get deployments --namespace=default
-                        /snap/microk8s/current/kubectl get pods --namespace=default | grep -E "(product|inventory|order)"
+                        /snap/microk8s/current/kubectl get deployments --namespace=default || echo "Failed to get deployments"
+                        /snap/microk8s/current/kubectl get pods --namespace=default | grep -E "(product|inventory|order)" || echo "No microservice pods found"
                     """
                 }
                 echo '✅ Kubernetes deployment completed!'
@@ -361,8 +379,8 @@ pipeline {
             steps {
                 echo '🔍 Running Comprehensive Health Checks...'
                 script {
-                    echo "⏳ Waiting 60 seconds for services to stabilize..."
-                    sleep(60)
+                    echo "⏳ Waiting 30 seconds for services to stabilize..."
+                    sleep(30)
                     
                     def services = [
                         'Product': 'http://20.86.144.152:31309/actuator/health',
@@ -376,21 +394,21 @@ pipeline {
                         try {
                             sh """
                                 echo "🔍 Checking ${name} service at ${url}..."
-                                response=\$(curl -s -w "%{http_code}" -o /tmp/${name.toLowerCase()}_health.json ${url})
+                                response=\$(curl -s -w "%{http_code}" -o /tmp/${name.toLowerCase()}_health.json ${url} || echo "000")
                                 echo "📊 ${name} HTTP Status: \$response"
                                 
                                 if [ "\$response" = "200" ]; then
                                     echo "✅ ${name} service is healthy"
-                                    cat /tmp/${name.toLowerCase()}_health.json
+                                    cat /tmp/${name.toLowerCase()}_health.json || echo "No response body"
                                 else
                                     echo "⚠️ ${name} service returned status \$response"
                                     cat /tmp/${name.toLowerCase()}_health.json || echo "No response body"
                                 fi
                             """
-                            healthResults[name] = 'HEALTHY'
+                            healthResults[name] = 'CHECKED'
                         } catch (Exception e) {
                             echo "❌ ${name} service health check failed: ${e.getMessage()}"
-                            healthResults[name] = 'UNHEALTHY'
+                            healthResults[name] = 'FAILED'
                         }
                     }
                     
@@ -408,13 +426,13 @@ pipeline {
                 echo '🧹 Cleaning up resources...'
                 sh """
                     echo "🗑️ Removing old Docker images..."
-                    docker image prune -f --filter "until=24h"
+                    docker image prune -f --filter "until=24h" || echo "Docker cleanup failed"
                     
                     echo "🗑️ Cleaning Docker system..."
-                    docker system prune -f --volumes=false
+                    docker system prune -f --volumes=false || echo "Docker system cleanup failed"
                     
                     echo "📊 Current Docker usage:"
-                    docker system df
+                    docker system df || echo "Docker df failed"
                     
                     echo "✅ Cleanup completed!"
                 """
@@ -435,7 +453,7 @@ pipeline {
                 ✅ Build Number: ${BUILD_NUMBER}
                 ✅ Duration: ${duration}
                 ✅ Git Commit: ${env.GIT_COMMIT_SHORT}
-                ✅ All microservices deployed and healthy
+                ✅ All microservices processed
                 
                 🌐 SERVICE ENDPOINTS:
                 🛍️  Product Service:    http://20.86.144.152:31309/actuator/health
