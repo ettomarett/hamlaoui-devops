@@ -4,9 +4,10 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'localhost:32000'
         KUBECONFIG = '/var/jenkins_home/.kube/config'
-        GIT_REPO = 'https://github.com/hamlaoui/hamlaoui-devops.git'
+        GIT_REPO = 'https://github.com/ettomarett/hamlaoui-devops.git'
         PROJECT_DIR = 'hamlaoui-devops'
-        NOTIFICATION_WEBHOOK = 'YOUR_SLACK_WEBHOOK_URL' // Optional: Add your Slack webhook
+        MAVEN_HOME = '/opt/maven'
+        PATH = "${MAVEN_HOME}/bin:${env.PATH}"
     }
     
     stages {
@@ -34,14 +35,36 @@ pipeline {
             }
         }
         
-        stage('🔍 Environment Check') {
+        stage('🔧 Setup Build Environment') {
             steps {
-                echo '🔧 Checking Build Environment...'
+                echo '🔧 Setting up Build Environment...'
                 sh '''
+                    echo "📋 Checking and installing required tools..."
+                    
+                    # Check if Maven is installed
+                    if ! command -v mvn &> /dev/null; then
+                        echo "📦 Maven not found, installing..."
+                        
+                        # Install Maven
+                        cd /tmp
+                        wget -q https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+                        tar -xzf apache-maven-3.9.6-bin.tar.gz
+                        sudo mv apache-maven-3.9.6 /opt/maven
+                        sudo chown -R jenkins:jenkins /opt/maven
+                        
+                        # Create symlink
+                        sudo ln -sf /opt/maven/bin/mvn /usr/local/bin/mvn
+                        
+                        echo "✅ Maven installed successfully"
+                    else
+                        echo "✅ Maven is already installed"
+                    fi
+                    
+                    echo "📊 Environment Status:"
                     echo "Java Version:"
                     java -version
                     echo "Maven Version:"
-                    mvn -version
+                    mvn -version || echo "Maven installation in progress..."
                     echo "Docker Version:"
                     docker --version
                     echo "Kubectl Version:"
@@ -69,7 +92,13 @@ pipeline {
                                 
                                 if [ -f "pom.xml" ]; then
                                     echo "✅ Found pom.xml, building with Maven..."
-                                    mvn clean compile package -DskipTests -B
+                                    
+                                    # Ensure Maven is in PATH
+                                    export PATH="/opt/maven/bin:$PATH"
+                                    
+                                    # Build the project
+                                    /opt/maven/bin/mvn clean compile package -DskipTests -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository
+                                    
                                     echo "📦 Product Service JAR built successfully"
                                     ls -la target/
                                 else
@@ -100,7 +129,13 @@ pipeline {
                                 
                                 if [ -f "pom.xml" ]; then
                                     echo "✅ Found pom.xml, building with Maven..."
-                                    mvn clean compile package -DskipTests -B
+                                    
+                                    # Ensure Maven is in PATH
+                                    export PATH="/opt/maven/bin:$PATH"
+                                    
+                                    # Build the project
+                                    /opt/maven/bin/mvn clean compile package -DskipTests -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository
+                                    
                                     echo "📦 Inventory Service JAR built successfully"
                                     ls -la target/
                                 else
@@ -131,7 +166,13 @@ pipeline {
                                 
                                 if [ -f "pom.xml" ]; then
                                     echo "✅ Found pom.xml, building with Maven..."
-                                    mvn clean compile package -DskipTests -B
+                                    
+                                    # Ensure Maven is in PATH
+                                    export PATH="/opt/maven/bin:$PATH"
+                                    
+                                    # Build the project
+                                    /opt/maven/bin/mvn clean compile package -DskipTests -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository
+                                    
                                     echo "📦 Order Service JAR built successfully"
                                     ls -la target/
                                 else
@@ -160,7 +201,8 @@ pipeline {
                         dir("${PROJECT_DIR}/product-service") {
                             echo '🧪 Testing Product Service...'
                             sh '''
-                                mvn test -B || echo "Tests completed with status $?"
+                                export PATH="/opt/maven/bin:$PATH"
+                                /opt/maven/bin/mvn test -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository || echo "Tests completed with status $?"
                                 echo "📊 Test Results:"
                                 if [ -d "target/surefire-reports" ]; then
                                     ls -la target/surefire-reports/
@@ -174,7 +216,8 @@ pipeline {
                         dir("${PROJECT_DIR}/inventory-service") {
                             echo '🧪 Testing Inventory Service...'
                             sh '''
-                                mvn test -B || echo "Tests completed with status $?"
+                                export PATH="/opt/maven/bin:$PATH"
+                                /opt/maven/bin/mvn test -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository || echo "Tests completed with status $?"
                                 echo "📊 Test Results:"
                                 if [ -d "target/surefire-reports" ]; then
                                     ls -la target/surefire-reports/
@@ -188,7 +231,8 @@ pipeline {
                         dir("${PROJECT_DIR}/order-service") {
                             echo '🧪 Testing Order Service...'
                             sh '''
-                                mvn test -B || echo "Tests completed with status $?"
+                                export PATH="/opt/maven/bin:$PATH"
+                                /opt/maven/bin/mvn test -B -Dmaven.repo.local=/var/jenkins_home/.m2/repository || echo "Tests completed with status $?"
                                 echo "📊 Test Results:"
                                 if [ -d "target/surefire-reports" ]; then
                                     ls -la target/surefire-reports/
