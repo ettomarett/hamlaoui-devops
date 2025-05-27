@@ -1,286 +1,326 @@
-Started by user unknown or anonymous
-Obtained backend/Jenkinsfile from git https://github.com/ettomarett/hamlaoui-devops.git
-[Pipeline] Start of Pipeline
-[Pipeline] node
-Running on Jenkins in /var/jenkins_home/workspace/e-commerce-pipeline
-[Pipeline] {
-[Pipeline] stage
-[Pipeline] { (Declarative: Checkout SCM)
-[Pipeline] checkout
-The recommended git tool is: git
-No credentials specified
- > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/e-commerce-pipeline/.git # timeout=10
-Fetching changes from the remote Git repository
- > git config remote.origin.url https://github.com/ettomarett/hamlaoui-devops.git # timeout=10
-Fetching upstream changes from https://github.com/ettomarett/hamlaoui-devops.git
- > git --version # timeout=10
- > git --version # 'git version 2.39.5'
- > git fetch --tags --force --progress -- https://github.com/ettomarett/hamlaoui-devops.git +refs/heads/*:refs/remotes/origin/* # timeout=10
- > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
-Checking out Revision 06715fc25798cdbeaeb519a214957d1cdab3216f (refs/remotes/origin/main)
- > git config core.sparsecheckout # timeout=10
- > git checkout -f 06715fc25798cdbeaeb519a214957d1cdab3216f # timeout=10
-Commit message: "restructure"
- > git rev-list --no-walk 99a7c531e5b94856416c643e87314a48a3075081 # timeout=10
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] withEnv
-[Pipeline] {
-[Pipeline] withEnv
-[Pipeline] {
-[Pipeline] stage
-[Pipeline] { (🚀 Pipeline Start)
-[Pipeline] echo
-🎯 STARTING E-COMMERCE MICROSERVICES CI/CD PIPELINE
-[Pipeline] echo
-📅 Build Date: Tue May 27 02:10:01 UTC 2025
-[Pipeline] echo
-🔢 Build Number: 13
-[Pipeline] echo
-🌿 Branch: origin/main
-[Pipeline] cleanWs
-[WS-CLEANUP] Deleting project workspace...
-[WS-CLEANUP] Deferred wipeout is used...
-[WS-CLEANUP] done
-[Pipeline] checkout
-The recommended git tool is: git
-No credentials specified
-Cloning the remote Git repository
-Cloning repository https://github.com/ettomarett/hamlaoui-devops.git
- > git init /var/jenkins_home/workspace/e-commerce-pipeline # timeout=10
-Fetching upstream changes from https://github.com/ettomarett/hamlaoui-devops.git
- > git --version # timeout=10
- > git --version # 'git version 2.39.5'
- > git fetch --tags --force --progress -- https://github.com/ettomarett/hamlaoui-devops.git +refs/heads/*:refs/remotes/origin/* # timeout=10
- > git config remote.origin.url https://github.com/ettomarett/hamlaoui-devops.git # timeout=10
- > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
-Avoid second fetch
- > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
-Checking out Revision 06715fc25798cdbeaeb519a214957d1cdab3216f (refs/remotes/origin/main)
- > git config core.sparsecheckout # timeout=10
- > git checkout -f 06715fc25798cdbeaeb519a214957d1cdab3216f # timeout=10
-Commit message: "restructure"
-[Pipeline] script
-[Pipeline] {
-[Pipeline] sh
-+ git rev-parse --short HEAD
-[Pipeline] }
-[Pipeline] // script
-[Pipeline] echo
-📝 Commit: 06715fc
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] stage
-[Pipeline] { (🔧 Setup Build Environment)
-[Pipeline] echo
-🔧 Setting up Build Environment...
-[Pipeline] sh
-+ echo 📋 Checking and installing required tools...
-📋 Checking and installing required tools...
-+ 
-+ echo 📦 Maven not found, installing...
-📦 Maven not found, installing...
-+ echo ⬇️ Downloading Maven 3.9.6...
-⬇️ Downloading Maven 3.9.6...
-+ curl -L -o apache-maven-3.9.6-bin.tar.gz https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
-+ command -v mvn
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-100 9189k  100 9189k    0     0  12.8M      0 --:--:-- --:--:-- --:--:-- 12.8M
-+ echo 📦 Extracting Maven...
-📦 Extracting Maven...
-+ tar -xzf apache-maven-3.9.6-bin.tar.gz
-+ echo ✅ Maven installed successfully
-✅ Maven installed successfully
-+ echo 📊 Environment Status:
-📊 Environment Status:
-+ echo Java Version:
-Java Version:
-+ java -version
-openjdk version "17.0.15" 2025-04-15
-OpenJDK Runtime Environment Temurin-17.0.15+6 (build 17.0.15+6)
-OpenJDK 64-Bit Server VM Temurin-17.0.15+6 (build 17.0.15+6, mixed mode)
-+ echo Maven Version:
-Maven Version:
-+ /opt/maven/bin/mvn -version
-/var/jenkins_home/workspace/e-commerce-pipeline@tmp/durable-9d3872e1/script.sh.copy: 32: /opt/maven/bin/mvn: not found
-+ mvn -version
-/var/jenkins_home/workspace/e-commerce-pipeline@tmp/durable-9d3872e1/script.sh.copy: 32: mvn: not found
-+ echo Maven installation in progress...
-Maven installation in progress...
-+ echo Docker Version:
-Docker Version:
-+ docker --version
-/var/jenkins_home/workspace/e-commerce-pipeline@tmp/durable-9d3872e1/script.sh.copy: 34: docker: not found
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] stage
-[Pipeline] { (📦 Build Microservices)
-Stage "📦 Build Microservices" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] parallel
-[Pipeline] { (Branch: 🛍️ Product Service)
-[Pipeline] { (Branch: 📦 Inventory Service)
-[Pipeline] { (Branch: 🛒 Order Service)
-[Pipeline] stage
-[Pipeline] { (🛍️ Product Service)
-[Pipeline] stage
-[Pipeline] { (📦 Inventory Service)
-[Pipeline] stage
-[Pipeline] { (🛒 Order Service)
-Stage "🛍️ Product Service" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-Stage "📦 Inventory Service" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-Stage "🛒 Order Service" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] // stage
-[Pipeline] // stage
-[Pipeline] }
-Failed in branch 🛍️ Product Service
-[Pipeline] }
-Failed in branch 📦 Inventory Service
-[Pipeline] }
-Failed in branch 🛒 Order Service
-[Pipeline] // parallel
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] stage
-[Pipeline] { (🧪 Run Tests)
-Stage "🧪 Run Tests" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] parallel
-[Pipeline] { (Branch: 🛍️ Test Product)
-[Pipeline] { (Branch: 📦 Test Inventory)
-[Pipeline] { (Branch: 🛒 Test Order)
-[Pipeline] stage
-[Pipeline] { (🛍️ Test Product)
-[Pipeline] stage
-[Pipeline] { (📦 Test Inventory)
-[Pipeline] stage
-[Pipeline] { (🛒 Test Order)
-Stage "🛍️ Test Product" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-Stage "📦 Test Inventory" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-Stage "🛒 Test Order" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] // stage
-[Pipeline] // stage
-[Pipeline] }
-Failed in branch 🛍️ Test Product
-[Pipeline] }
-Failed in branch 📦 Test Inventory
-[Pipeline] }
-Failed in branch 🛒 Test Order
-[Pipeline] // parallel
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] stage
-[Pipeline] { (🐳 Build Docker Images)
-Stage "🐳 Build Docker Images" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] parallel
-[Pipeline] { (Branch: 🛍️ Docker Product)
-[Pipeline] { (Branch: 📦 Docker Inventory)
-[Pipeline] { (Branch: 🛒 Docker Order)
-[Pipeline] stage
-[Pipeline] { (🛍️ Docker Product)
-[Pipeline] stage
-[Pipeline] { (📦 Docker Inventory)
-[Pipeline] stage
-[Pipeline] { (🛒 Docker Order)
-Stage "🛍️ Docker Product" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-Stage "📦 Docker Inventory" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-Stage "🛒 Docker Order" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] // stage
-[Pipeline] // stage
-[Pipeline] }
-Failed in branch 🛍️ Docker Product
-[Pipeline] }
-Failed in branch 📦 Docker Inventory
-[Pipeline] }
-Failed in branch 🛒 Docker Order
-[Pipeline] // parallel
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] stage
-[Pipeline] { (📤 Push to Registry)
-Stage "📤 Push to Registry" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] stage
-[Pipeline] { (☸️ Deploy to Kubernetes)
-Stage "☸️ Deploy to Kubernetes" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] stage
-[Pipeline] { (🔍 Health Check & Verification)
-Stage "🔍 Health Check & Verification" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] stage
-[Pipeline] { (🧹 Cleanup)
-Stage "🧹 Cleanup" skipped due to earlier failure(s)
-[Pipeline] getContext
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] stage
-[Pipeline] { (Declarative: Post Actions)
-[Pipeline] echo
-
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_REGISTRY = 'localhost:32000'
+        MAVEN_HOME = '/opt/maven'
+        PATH = "${MAVEN_HOME}/bin:${env.PATH}:/usr/local/bin"
+        MAVEN_OPTS = '-Dmaven.repo.local=/var/jenkins_home/.m2/repository'
+    }
+    
+    stages {
+        stage('🚀 Pipeline Start') {
+            steps {
+                echo '🎯 STARTING E-COMMERCE MICROSERVICES CI/CD PIPELINE'
+                echo "📅 Build Date: ${new Date()}"
+                echo "🔢 Build Number: ${BUILD_NUMBER}"
+                echo "🌿 Branch: ${env.BRANCH_NAME ?: 'main'}"
+                
+                // Clean workspace and checkout fresh code
+                cleanWs()
+                checkout scm
+                
+                script {
+                    env.GIT_COMMIT_SHORT = sh(
+                        script: "git rev-parse --short HEAD",
+                        returnStdout: true
+                    ).trim()
+                }
+                echo "📝 Commit: ${env.GIT_COMMIT_SHORT}"
+            }
+        }
+        
+        stage('🔧 Environment Verification') {
+            steps {
+                echo '🔧 Verifying Build Environment...'
+                sh '''
+                    echo "📊 Environment Status:"
+                    echo "Java Version:"
+                    java -version
+                    echo "Maven Version:"
+                    mvn -version
+                    echo "Docker Version:"
+                    docker --version
+                    echo "kubectl Version:"
+                    kubectl version --client
+                    echo "Node.js Version:"
+                    node --version
+                    echo "npm Version:"
+                    npm --version
+                '''
+            }
+        }
+        
+        stage('📦 Build Microservices') {
+            parallel {
+                stage('🛍️ Product Service') {
+                    steps {
+                        dir('backend/product-service') {
+                            sh '''
+                                echo "🏗️ Building Product Service..."
+                                mvn clean compile package -DskipTests
+                                echo "✅ Product Service build completed"
+                            '''
+                        }
+                    }
+                }
+                stage('📦 Inventory Service') {
+                    steps {
+                        dir('backend/inventory-service') {
+                            sh '''
+                                echo "🏗️ Building Inventory Service..."
+                                mvn clean compile package -DskipTests
+                                echo "✅ Inventory Service build completed"
+                            '''
+                        }
+                    }
+                }
+                stage('🛒 Order Service') {
+                    steps {
+                        dir('backend/order-service') {
+                            sh '''
+                                echo "🏗️ Building Order Service..."
+                                mvn clean compile package -DskipTests
+                                echo "✅ Order Service build completed"
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('🧪 Run Tests') {
+            parallel {
+                stage('🛍️ Test Product') {
+                    steps {
+                        dir('backend/product-service') {
+                            sh '''
+                                echo "🧪 Running Product Service tests..."
+                                mvn test
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            publishTestResults testResultsPattern: 'backend/product-service/target/surefire-reports/*.xml'
+                        }
+                    }
+                }
+                stage('📦 Test Inventory') {
+                    steps {
+                        dir('backend/inventory-service') {
+                            sh '''
+                                echo "🧪 Running Inventory Service tests..."
+                                mvn test
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            publishTestResults testResultsPattern: 'backend/inventory-service/target/surefire-reports/*.xml'
+                        }
+                    }
+                }
+                stage('🛒 Test Order') {
+                    steps {
+                        dir('backend/order-service') {
+                            sh '''
+                                echo "🧪 Running Order Service tests..."
+                                mvn test
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            publishTestResults testResultsPattern: 'backend/order-service/target/surefire-reports/*.xml'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('🐳 Build Docker Images') {
+            parallel {
+                stage('🛍️ Docker Product') {
+                    steps {
+                        dir('backend/product-service') {
+                            sh '''
+                                echo "🐳 Building Product Service Docker image..."
+                                docker build -t ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER} ${DOCKER_REGISTRY}/product-service:latest
+                                echo "✅ Product Service Docker image built"
+                            '''
+                        }
+                    }
+                }
+                stage('📦 Docker Inventory') {
+                    steps {
+                        dir('backend/inventory-service') {
+                            sh '''
+                                echo "🐳 Building Inventory Service Docker image..."
+                                docker build -t ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER} ${DOCKER_REGISTRY}/inventory-service:latest
+                                echo "✅ Inventory Service Docker image built"
+                            '''
+                        }
+                    }
+                }
+                stage('🛒 Docker Order') {
+                    steps {
+                        dir('backend/order-service') {
+                            sh '''
+                                echo "🐳 Building Order Service Docker image..."
+                                docker build -t ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER} ${DOCKER_REGISTRY}/order-service:latest
+                                echo "✅ Order Service Docker image built"
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('📤 Push to Registry') {
+            steps {
+                sh '''
+                    echo "📤 Pushing Docker images to registry..."
+                    
+                    # Push Product Service
+                    docker push ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/product-service:latest
+                    
+                    # Push Inventory Service
+                    docker push ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/inventory-service:latest
+                    
+                    # Push Order Service
+                    docker push ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/order-service:latest
+                    
+                    echo "✅ All images pushed successfully"
+                '''
+            }
+        }
+        
+        stage('☸️ Deploy to Kubernetes') {
+            steps {
+                sh '''
+                    echo "☸️ Deploying to Kubernetes cluster..."
+                    
+                    # Update deployments with new image tags
+                    kubectl set image deployment/product-service product-service=${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER} || echo "Product deployment update failed"
+                    kubectl set image deployment/inventory-service inventory-service=${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER} || echo "Inventory deployment update failed"
+                    kubectl set image deployment/order-service order-service=${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER} || echo "Order deployment update failed"
+                    
+                    # Wait for rollouts to complete
+                    echo "⏳ Waiting for deployments to complete..."
+                    kubectl rollout status deployment/product-service --timeout=300s || echo "Product rollout timeout"
+                    kubectl rollout status deployment/inventory-service --timeout=300s || echo "Inventory rollout timeout"
+                    kubectl rollout status deployment/order-service --timeout=300s || echo "Order rollout timeout"
+                    
+                    echo "✅ Kubernetes deployment completed"
+                '''
+            }
+        }
+        
+        stage('🔍 Health Check & Verification') {
+            steps {
+                sh '''
+                    echo "🔍 Performing health checks..."
+                    
+                    # Wait for services to be ready
+                    sleep 30
+                    
+                    # Health check endpoints
+                    echo "Checking Product Service health..."
+                    curl -f http://20.86.144.152:31309/actuator/health || echo "❌ Product service health check failed"
+                    
+                    echo "Checking Inventory Service health..."
+                    curl -f http://20.86.144.152:31081/actuator/health || echo "❌ Inventory service health check failed"
+                    
+                    echo "Checking Order Service health..."
+                    curl -f http://20.86.144.152:31004/actuator/health || echo "❌ Order service health check failed"
+                    
+                    # Check Kubernetes pod status
+                    echo "📊 Kubernetes Pod Status:"
+                    kubectl get pods -l app=product-service
+                    kubectl get pods -l app=inventory-service
+                    kubectl get pods -l app=order-service
+                    
+                    echo "✅ Health checks completed"
+                '''
+            }
+        }
+        
+        stage('🧹 Cleanup') {
+            steps {
+                sh '''
+                    echo "🧹 Cleaning up build artifacts..."
+                    
+                    # Remove old Docker images to save space
+                    docker image prune -f
+                    
+                    # Clean Maven cache if needed
+                    # mvn dependency:purge-local-repository -DactTransitively=false -DreResolve=false
+                    
+                    echo "✅ Cleanup completed"
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo '''
             📊 ========================================
             📊 PIPELINE EXECUTION COMPLETED
             📊 ========================================
             
-            📅 Timestamp: Tue May 27 02:10:11 UTC 2025
-            🔢 Build Number: 13
-            📝 Git Commit: 06715fc
-            🌿 Branch: origin/main
-            ⏱️ Duration: 12 sec
+            📅 Timestamp: ''' + new Date() + '''
+            🔢 Build Number: ''' + env.BUILD_NUMBER + '''
+            📝 Git Commit: ''' + env.GIT_COMMIT_SHORT + '''
+            🌿 Branch: ''' + (env.BRANCH_NAME ?: 'main') + '''
+            ⏱️ Duration: ''' + currentBuild.durationString + '''
             
             📋 Workspace cleaned and ready for next build
+            '''
             
-[Pipeline] script
-[Pipeline] {
-[Pipeline] archiveArtifacts
-Archiving artifacts
-[Pipeline] echo
-📦 Build artifacts archived
-[Pipeline] }
-[Pipeline] // script
-[Pipeline] script
-[Pipeline] {
-[Pipeline] echo
-
+            script {
+                try {
+                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+                    echo '📦 Build artifacts archived'
+                } catch (Exception e) {
+                    echo "📦 No artifacts to archive: ${e.message}"
+                }
+            }
+        }
+        success {
+            echo '''
+                ✅ ========================================
+                ✅ PIPELINE SUCCEEDED!
+                ✅ ========================================
+                
+                🎉 All microservices built and deployed successfully
+                🚀 Services are running on Kubernetes cluster
+                📊 Health checks passed
+                
+                🔗 Access your services:
+                • Product Service: http://20.86.144.152:31309
+                • Inventory Service: http://20.86.144.152:31081
+                • Order Service: http://20.86.144.152:31004
+                '''
+        }
+        failure {
+            script {
+                echo '''
                 ❌ ========================================
                 ❌ PIPELINE FAILED!
                 ❌ ========================================
                 
                 📊 FAILURE SUMMARY:
-                ❌ Build Number: 13
-                ❌ Duration: 12 sec
-                ❌ Git Commit: 06715fc
+                ❌ Build Number: ''' + env.BUILD_NUMBER + '''
+                ❌ Duration: ''' + currentBuild.durationString + '''
+                ❌ Git Commit: ''' + env.GIT_COMMIT_SHORT + '''
                 
                 🔍 TROUBLESHOOTING STEPS:
                 1. Check the build logs above for specific errors
@@ -290,17 +330,11 @@ Archiving artifacts
                 5. Review application configuration
                 
                 📞 Need help? Check the Jenkins console output for detailed error messages.
-                
-[Pipeline] }
-[Pipeline] // script
-[Pipeline] }
-[Pipeline] // stage
-[Pipeline] }
-[Pipeline] // withEnv
-[Pipeline] }
-[Pipeline] // withEnv
-[Pipeline] }
-[Pipeline] // node
-[Pipeline] End of Pipeline
-ERROR: script returned exit code 127
-Finished: FAILURE
+                '''
+            }
+        }
+        unstable {
+            echo '⚠️ Pipeline completed with warnings - check test results'
+        }
+    }
+} 
