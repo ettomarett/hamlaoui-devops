@@ -111,7 +111,7 @@ pipeline {
                         dir('backend/inventory-service') {
                             sh '''
                                 echo "🧪 Running Inventory Service tests..."
-                                mvn test
+                                mvn test -Dspring.profiles.active=test
                             '''
                         }
                     }
@@ -126,7 +126,7 @@ pipeline {
                         dir('backend/order-service') {
                             sh '''
                                 echo "🧪 Running Order Service tests..."
-                                mvn test
+                                mvn test -Dspring.profiles.active=test
                             '''
                         }
                     }
