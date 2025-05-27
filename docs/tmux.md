@@ -257,4 +257,4 @@ wsl tmux capture-pane -t cursor-ai-session -p
 This tmux-based approach provides a robust solution for maintaining persistent WSL sessions in Cursor AI, enabling complex development workflows while preserving session state across all interactions. The length issue workarounds ensure reliable command execution despite PowerShell console limitations. 
 
 
-via ssh we can use wsl to connect to cloud instance 20.86.144.152 with ./omar_key.pem , where username is omar.
+via ssh we can use wsl to connect to cloud instance 20.86.144.152 with ./omarkey.pem , where username is omar.
