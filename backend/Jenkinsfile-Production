@@ -5,7 +5,8 @@ pipeline {
         DOCKER_REGISTRY = 'localhost:32000'
         MAVEN_OPTS = '-Dmaven.repo.local=/var/jenkins_home/.m2/repository'
         JAVA_HOME = '/opt/java/openjdk'
-        PATH = "${env.PATH}:/opt/maven/bin:/usr/local/bin"
+        MAVEN_HOME = '/tmp/apache-maven-3.9.6'
+        PATH = "${MAVEN_HOME}/bin:${env.PATH}:/usr/local/bin"
     }
     
     stages {
