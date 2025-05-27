@@ -45,9 +45,7 @@ pipeline {
                     if ! command -v mvn &> /dev/null; then
                         echo "📦 Maven not found, installing..."
                         
-                        # Create Maven directory
-                        sudo mkdir -p /opt/maven
-                        cd /tmp
+
                         
                         # Download Maven using curl
                         echo "⬇️ Downloading Maven 3.9.6..."
@@ -57,15 +55,10 @@ pipeline {
                         echo "📦 Extracting Maven..."
                         tar -xzf apache-maven-3.9.6-bin.tar.gz
                         
-                        # Move to /opt
-                        sudo mv apache-maven-3.9.6/* /opt/maven/
-                        sudo chown -R jenkins:jenkins /opt/maven
+
+
                         
-                        # Create symlink
-                        sudo ln -sf /opt/maven/bin/mvn /usr/local/bin/mvn
-                        
-                        # Set permissions
-                        sudo chmod +x /opt/maven/bin/mvn
+
                         
                         echo "✅ Maven installed successfully"
                     else
