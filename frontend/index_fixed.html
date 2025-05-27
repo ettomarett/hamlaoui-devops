@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Microservices Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-shopping-cart"></i> E-Commerce Platform</h1>
+                <p>Microservices Frontend Dashboard</p>
+            </div>
+        </header>
+        
+        <nav class="tab-navigation">
+            <button class="tab-btn active" data-tab="products">
+                <i class="fas fa-box"></i> Products
+            </button>
+            <button class="tab-btn" data-tab="inventory">
+                <i class="fas fa-warehouse"></i> Inventory  
+            </button>
+            <button class="tab-btn" data-tab="orders">
+                <i class="fas fa-receipt"></i> Orders
+            </button>
+        </nav>
+
+        <div class="content">
+            <div id="products" class="tab-content active">
+                <h2>Product Management</h2>
+                <div class="form-section">
+                    <h3>Add New Product</h3>
+                    <form id="productForm">
+                        <input type="text" id="productName" placeholder="Product Name" required>
+                        <input type="text" id="productDescription" placeholder="Description" required>
+                        <input type="number" id="productPrice" placeholder="Price" step="0.01" required>
+                        <button type="submit">Add Product</button>
+                    </form>
+                </div>
+                <div id="productsList"></div>
+            </div>
+
+            <div id="inventory" class="tab-content">
+                <h2>Inventory Management</h2>
+                
+                <!-- Enhanced Inventory Section with SKU List -->
+                <div class="inventory-actions">
+                    <button class="btn btn-primary" id="showSkuListBtn">
+                        <i class="fas fa-list"></i> Show Available SKU Codes
+                    </button>
+                </div>
+
+                <!-- Available SKU Codes Section -->
+                <div id="skuListSection" class="sku-list-section" style="display: none;">
+                    <div class="section-header">
+                        <h3><i class="fas fa-tags"></i> Available SKU Codes</h3>
+                        <button class="btn btn-secondary btn-small" id="hideSkuListBtn">
+                            <i class="fas fa-times"></i> Hide
+                        </button>
+                    </div>
+                    <div id="skuListContainer" class="sku-list-container">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading SKU codes...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Check Form -->
+                <div class="form-section">
+                    <h3>Check Stock</h3>
+                    <form id="inventoryForm">
+                        <div class="input-group">
+                            <input type="text" id="skuCode" placeholder="Enter SKU codes (comma separated)" required>
+                            <button type="submit">Check Stock</button>
+                        </div>
+                        <small class="help-text">
+                            <i class="fas fa-info-circle"></i> 
+                            Enter one or more SKU codes separated by commas (e.g., iphone_13, macbook_pro)
+                        </small>
+                    </form>
+                </div>
+
+                <!-- Inventory Results -->
+                <div id="inventoryResult" class="inventory-results"></div>
+            </div>
+
+            <div id="orders" class="tab-content">
+                <h2>Order Management</h2>
+                <div class="form-section">
+                    <h3>Create Order</h3>
+                    <form id="orderForm">
+                        <div id="orderItems">
+                            <div class="order-item">
+                                <input type="text" placeholder="SKU Code" name="skuCode" required>
+                                <input type="number" placeholder="Quantity" name="quantity" min="1" required>
+                            </div>
+                        </div>
+                        <button type="button" id="addOrderItem">Add Item</button>
+                        <button type="submit">Place Order</button>
+                    </form>
+                </div>
+                <div id="orderResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 
