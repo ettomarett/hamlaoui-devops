@@ -167,7 +167,7 @@ pipeline {
                     }
                     post {
                         always {
-                            publishTestResults testResultsPattern: 'backend/product-service/target/surefire-reports/*.xml', allowEmptyResults: true
+                            junit testResults: 'backend/product-service/target/surefire-reports/*.xml', allowEmptyResults: true
                         }
                     }
                 }
@@ -188,7 +188,7 @@ pipeline {
                     }
                     post {
                         always {
-                            publishTestResults testResultsPattern: 'backend/inventory-service/target/surefire-reports/*.xml', allowEmptyResults: true
+                            junit testResults: 'backend/inventory-service/target/surefire-reports/*.xml', allowEmptyResults: true
                         }
                     }
                 }
@@ -209,7 +209,7 @@ pipeline {
                     }
                     post {
                         always {
-                            publishTestResults testResultsPattern: 'backend/order-service/target/surefire-reports/*.xml', allowEmptyResults: true
+                            junit testResults: 'backend/order-service/target/surefire-reports/*.xml', allowEmptyResults: true
                         }
                     }
                 }
