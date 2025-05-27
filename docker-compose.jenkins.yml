@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
+    container_name: jenkins-custom
+    ports:
+      - "31080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./backend:/workspace/backend
+      - ./k8s:/workspace/k8s
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Dhudson.model.DirectoryBrowserSupport.CSP=
+      - MAVEN_HOME=/opt/maven
+      - MAVEN_OPTS=-Dmaven.repo.local=/var/jenkins_home/.m2/repository
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    networks:
+      - jenkins-network
+    restart: unless-stopped
+    user: jenkins
+    privileged: false
+
+  # Optional: Docker Registry for storing built images
+  registry:
+    image: registry:2
+    container_name: docker-registry
+    ports:
+      - "32000:5000"
+    volumes:
+      - registry_data:/var/lib/registry
+    networks:
+      - jenkins-network
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:
+    driver: local
+  registry_data:
+    driver: local
+
+networks:
+  jenkins-network:
+    driver: bridge 

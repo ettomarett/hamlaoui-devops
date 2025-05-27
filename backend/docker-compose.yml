@@ -1,6 +1,41 @@
 version: '3.8'
 
 services:
+  # CI/CD
+  jenkins:
+    build:
+      context: ..
+      dockerfile: Dockerfile.jenkins
+    container_name: jenkins-backend
+    ports:
+      - "31080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/workspace/backend
+      - ./k8s:/workspace/k8s
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - MAVEN_HOME=/opt/maven
+      - MAVEN_OPTS=-Dmaven.repo.local=/var/jenkins_home/.m2/repository
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Docker Registry for CI/CD
+  registry:
+    image: registry:2
+    container_name: docker-registry-backend
+    ports:
+      - "32000:5000"
+    volumes:
+      - registry_data:/var/lib/registry
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
   # Databases
   mongodb:
     image: mongo:5.0
@@ -105,6 +140,10 @@ services:
       - microservices-network
 
 volumes:
+  jenkins_home:
+    driver: local
+  registry_data:
+    driver: local
   mongodb_data:
   mysql_data:
   grafana_data:
