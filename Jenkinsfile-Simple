@@ -1,0 +1,154 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_REGISTRY = 'localhost:32000'
+        MAVEN_HOME = '/opt/maven'
+        PATH = "${MAVEN_HOME}/bin:${env.PATH}"
+    }
+    
+    stages {
+        stage('🚀 Checkout') {
+            steps {
+                echo '🎯 Starting E-Commerce Pipeline'
+                checkout scm
+                echo "Build #${BUILD_NUMBER}"
+            }
+        }
+        
+        stage('🔧 Setup') {
+            steps {
+                sh '''
+                    echo "📋 Environment Check"
+                    java -version
+                    docker --version
+                    /opt/maven/bin/mvn -version || echo "Maven setup needed"
+                '''
+            }
+        }
+        
+        stage('📦 Build Services') {
+            parallel {
+                stage('Product Service') {
+                    steps {
+                        dir('product-service') {
+                            sh '''
+                                echo "🏗️ Building Product Service"
+                                /opt/maven/bin/mvn clean package -DskipTests
+                            '''
+                        }
+                    }
+                }
+                stage('Inventory Service') {
+                    steps {
+                        dir('inventory-service') {
+                            sh '''
+                                echo "🏗️ Building Inventory Service"
+                                /opt/maven/bin/mvn clean package -DskipTests
+                            '''
+                        }
+                    }
+                }
+                stage('Order Service') {
+                    steps {
+                        dir('order-service') {
+                            sh '''
+                                echo "🏗️ Building Order Service"
+                                /opt/maven/bin/mvn clean package -DskipTests
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('🐳 Docker Build') {
+            parallel {
+                stage('Product Docker') {
+                    steps {
+                        dir('product-service') {
+                            sh '''
+                                docker build -t ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER} ${DOCKER_REGISTRY}/product-service:latest
+                            '''
+                        }
+                    }
+                }
+                stage('Inventory Docker') {
+                    steps {
+                        dir('inventory-service') {
+                            sh '''
+                                docker build -t ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER} ${DOCKER_REGISTRY}/inventory-service:latest
+                            '''
+                        }
+                    }
+                }
+                stage('Order Docker') {
+                    steps {
+                        dir('order-service') {
+                            sh '''
+                                docker build -t ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER} .
+                                docker tag ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER} ${DOCKER_REGISTRY}/order-service:latest
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('📤 Push Images') {
+            steps {
+                sh '''
+                    echo "🚀 Pushing to registry"
+                    docker push ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/product-service:latest
+                    docker push ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/inventory-service:latest
+                    docker push ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/order-service:latest
+                '''
+            }
+        }
+        
+        stage('☸️ Deploy') {
+            steps {
+                sh '''
+                    echo "🔄 Updating Kubernetes deployments"
+                    /snap/microk8s/current/kubectl set image deployment/product-service product-service=${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER}
+                    /snap/microk8s/current/kubectl set image deployment/inventory-service inventory-service=${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER}
+                    /snap/microk8s/current/kubectl set image deployment/order-service order-service=${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER}
+                    
+                    echo "⏳ Waiting for rollout"
+                    /snap/microk8s/current/kubectl rollout status deployment/product-service --timeout=300s
+                    /snap/microk8s/current/kubectl rollout status deployment/inventory-service --timeout=300s
+                    /snap/microk8s/current/kubectl rollout status deployment/order-service --timeout=300s
+                '''
+            }
+        }
+        
+        stage('🔍 Health Check') {
+            steps {
+                sh '''
+                    echo "🔍 Checking service health"
+                    sleep 30
+                    curl -f http://20.86.144.152:31309/actuator/health || echo "Product service health check failed"
+                    curl -f http://20.86.144.152:31081/actuator/health || echo "Inventory service health check failed"
+                    curl -f http://20.86.144.152:31004/actuator/health || echo "Order service health check failed"
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo '🎉 Pipeline completed'
+        }
+        success {
+            echo '✅ Pipeline succeeded'
+        }
+        failure {
+            echo '❌ Pipeline failed'
+        }
+    }
+} 

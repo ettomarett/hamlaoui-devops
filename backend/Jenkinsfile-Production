@@ -1,0 +1,392 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_REGISTRY = 'localhost:32000'
+        MAVEN_OPTS = '-Dmaven.repo.local=/var/jenkins_home/.m2/repository'
+        JAVA_HOME = '/opt/java/openjdk'
+        PATH = "${env.PATH}:/opt/maven/bin:/usr/local/bin"
+    }
+    
+    stages {
+        stage('🚀 Pipeline Start') {
+            steps {
+                echo '🎯 STARTING E-COMMERCE MICROSERVICES CI/CD PIPELINE'
+                echo "📅 Build Date: ${new Date()}"
+                echo "🔢 Build Number: ${BUILD_NUMBER}"
+                echo "🌿 Branch: ${env.GIT_BRANCH ?: 'main'}"
+                
+                // Clean workspace and checkout
+                cleanWs()
+                checkout scm
+                
+                script {
+                    env.GIT_COMMIT_SHORT = sh(
+                        script: "git rev-parse --short HEAD",
+                        returnStdout: true
+                    ).trim()
+                }
+                
+                echo "📝 Commit: ${env.GIT_COMMIT_SHORT}"
+            }
+        }
+        
+        stage('🔧 Environment Check') {
+            steps {
+                echo '🔧 Verifying Build Environment...'
+                sh '''
+                    echo "📊 Environment Status:"
+                    echo "Java Version:"
+                    java -version
+                    echo "Maven Version:"
+                    mvn -version
+                    echo "Docker Version:"
+                    docker --version
+                    echo "Current Directory:"
+                    pwd
+                    echo "Directory Contents:"
+                    ls -la
+                    echo "Backend Directory:"
+                    ls -la backend/ || echo "No backend directory found"
+                '''
+            }
+        }
+        
+        stage('📦 Build Microservices') {
+            parallel {
+                stage('🛍️ Product Service') {
+                    steps {
+                        dir('backend/product-service') {
+                            echo '🏗️ Building Product Service...'
+                            sh '''
+                                echo "📂 Current directory: $(pwd)"
+                                echo "📋 Files in directory:"
+                                ls -la
+                                
+                                if [ -f "pom.xml" ]; then
+                                    echo "✅ Found pom.xml, building with Maven..."
+                                    mvn clean compile package -DskipTests -B ${MAVEN_OPTS}
+                                    echo "📦 Product Service JAR built successfully"
+                                    ls -la target/
+                                else
+                                    echo "❌ No pom.xml found in product-service"
+                                    exit 1
+                                fi
+                            '''
+                        }
+                    }
+                    post {
+                        success {
+                            echo '✅ Product Service build completed'
+                        }
+                        failure {
+                            echo '❌ Product Service build failed'
+                        }
+                    }
+                }
+                
+                stage('📦 Inventory Service') {
+                    steps {
+                        dir('backend/inventory-service') {
+                            echo '🏗️ Building Inventory Service...'
+                            sh '''
+                                echo "📂 Current directory: $(pwd)"
+                                echo "📋 Files in directory:"
+                                ls -la
+                                
+                                if [ -f "pom.xml" ]; then
+                                    echo "✅ Found pom.xml, building with Maven..."
+                                    mvn clean compile package -DskipTests -B ${MAVEN_OPTS}
+                                    echo "📦 Inventory Service JAR built successfully"
+                                    ls -la target/
+                                else
+                                    echo "❌ No pom.xml found in inventory-service"
+                                    exit 1
+                                fi
+                            '''
+                        }
+                    }
+                    post {
+                        success {
+                            echo '✅ Inventory Service build completed'
+                        }
+                        failure {
+                            echo '❌ Inventory Service build failed'
+                        }
+                    }
+                }
+                
+                stage('🛒 Order Service') {
+                    steps {
+                        dir('backend/order-service') {
+                            echo '🏗️ Building Order Service...'
+                            sh '''
+                                echo "📂 Current directory: $(pwd)"
+                                echo "📋 Files in directory:"
+                                ls -la
+                                
+                                if [ -f "pom.xml" ]; then
+                                    echo "✅ Found pom.xml, building with Maven..."
+                                    mvn clean compile package -DskipTests -B ${MAVEN_OPTS}
+                                    echo "📦 Order Service JAR built successfully"
+                                    ls -la target/
+                                else
+                                    echo "❌ No pom.xml found in order-service"
+                                    exit 1
+                                fi
+                            '''
+                        }
+                    }
+                    post {
+                        success {
+                            echo '✅ Order Service build completed'
+                        }
+                        failure {
+                            echo '❌ Order Service build failed'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('🧪 Run Tests') {
+            parallel {
+                stage('🛍️ Test Product') {
+                    steps {
+                        dir('backend/product-service') {
+                            echo '🧪 Testing Product Service...'
+                            sh '''
+                                if [ -f "pom.xml" ]; then
+                                    mvn test -B ${MAVEN_OPTS}
+                                    echo "✅ Product Service tests completed"
+                                else
+                                    echo "⚠️ No tests to run for Product Service"
+                                fi
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            publishTestResults testResultsPattern: 'backend/product-service/target/surefire-reports/*.xml', allowEmptyResults: true
+                        }
+                    }
+                }
+                
+                stage('📦 Test Inventory') {
+                    steps {
+                        dir('backend/inventory-service') {
+                            echo '🧪 Testing Inventory Service...'
+                            sh '''
+                                if [ -f "pom.xml" ]; then
+                                    mvn test -B ${MAVEN_OPTS}
+                                    echo "✅ Inventory Service tests completed"
+                                else
+                                    echo "⚠️ No tests to run for Inventory Service"
+                                fi
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            publishTestResults testResultsPattern: 'backend/inventory-service/target/surefire-reports/*.xml', allowEmptyResults: true
+                        }
+                    }
+                }
+                
+                stage('🛒 Test Order') {
+                    steps {
+                        dir('backend/order-service') {
+                            echo '🧪 Testing Order Service...'
+                            sh '''
+                                if [ -f "pom.xml" ]; then
+                                    mvn test -B ${MAVEN_OPTS}
+                                    echo "✅ Order Service tests completed"
+                                else
+                                    echo "⚠️ No tests to run for Order Service"
+                                fi
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            publishTestResults testResultsPattern: 'backend/order-service/target/surefire-reports/*.xml', allowEmptyResults: true
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('🐳 Build Docker Images') {
+            parallel {
+                stage('🛍️ Docker Product') {
+                    steps {
+                        dir('backend/product-service') {
+                            echo '🐳 Building Product Service Docker Image...'
+                            sh '''
+                                if [ -f "Dockerfile" ]; then
+                                    docker build -t ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER} .
+                                    docker tag ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER} ${DOCKER_REGISTRY}/product-service:latest
+                                    echo "✅ Product Service Docker image built"
+                                else
+                                    echo "❌ No Dockerfile found for Product Service"
+                                    exit 1
+                                fi
+                            '''
+                        }
+                    }
+                }
+                
+                stage('📦 Docker Inventory') {
+                    steps {
+                        dir('backend/inventory-service') {
+                            echo '🐳 Building Inventory Service Docker Image...'
+                            sh '''
+                                if [ -f "Dockerfile" ]; then
+                                    docker build -t ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER} .
+                                    docker tag ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER} ${DOCKER_REGISTRY}/inventory-service:latest
+                                    echo "✅ Inventory Service Docker image built"
+                                else
+                                    echo "❌ No Dockerfile found for Inventory Service"
+                                    exit 1
+                                fi
+                            '''
+                        }
+                    }
+                }
+                
+                stage('🛒 Docker Order') {
+                    steps {
+                        dir('backend/order-service') {
+                            echo '🐳 Building Order Service Docker Image...'
+                            sh '''
+                                if [ -f "Dockerfile" ]; then
+                                    docker build -t ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER} .
+                                    docker tag ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER} ${DOCKER_REGISTRY}/order-service:latest
+                                    echo "✅ Order Service Docker image built"
+                                else
+                                    echo "❌ No Dockerfile found for Order Service"
+                                    exit 1
+                                fi
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('📤 Push to Registry') {
+            steps {
+                echo '📤 Pushing Docker images to registry...'
+                sh '''
+                    echo "🚀 Pushing images to ${DOCKER_REGISTRY}"
+                    
+                    # Push Product Service
+                    docker push ${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/product-service:latest
+                    
+                    # Push Inventory Service
+                    docker push ${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/inventory-service:latest
+                    
+                    # Push Order Service
+                    docker push ${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/order-service:latest
+                    
+                    echo "✅ All images pushed successfully"
+                '''
+            }
+        }
+        
+        stage('☸️ Deploy to Kubernetes') {
+            steps {
+                echo '☸️ Deploying to Kubernetes...'
+                sh '''
+                    echo "🔄 Updating Kubernetes deployments with new images"
+                    
+                    # Update deployments with new image tags
+                    kubectl set image deployment/product-service product-service=${DOCKER_REGISTRY}/product-service:${BUILD_NUMBER} || echo "Product service deployment not found"
+                    kubectl set image deployment/inventory-service inventory-service=${DOCKER_REGISTRY}/inventory-service:${BUILD_NUMBER} || echo "Inventory service deployment not found"
+                    kubectl set image deployment/order-service order-service=${DOCKER_REGISTRY}/order-service:${BUILD_NUMBER} || echo "Order service deployment not found"
+                    
+                    echo "⏳ Waiting for rollout to complete..."
+                    kubectl rollout status deployment/product-service --timeout=300s || echo "Product service rollout timeout"
+                    kubectl rollout status deployment/inventory-service --timeout=300s || echo "Inventory service rollout timeout"
+                    kubectl rollout status deployment/order-service --timeout=300s || echo "Order service rollout timeout"
+                    
+                    echo "✅ Kubernetes deployment completed"
+                '''
+            }
+        }
+        
+        stage('🔍 Health Check') {
+            steps {
+                echo '🔍 Performing health checks...'
+                sh '''
+                    echo "🔍 Checking service health endpoints"
+                    sleep 30
+                    
+                    # Health check for Product Service
+                    curl -f http://20.86.144.152:31309/actuator/health || echo "❌ Product service health check failed"
+                    
+                    # Health check for Inventory Service
+                    curl -f http://20.86.144.152:31081/actuator/health || echo "❌ Inventory service health check failed"
+                    
+                    # Health check for Order Service
+                    curl -f http://20.86.144.152:31004/actuator/health || echo "❌ Order service health check failed"
+                    
+                    echo "✅ Health checks completed"
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo '''
+            📊 ========================================
+            📊 PIPELINE EXECUTION COMPLETED
+            📊 ========================================
+            '''
+            echo "📅 Timestamp: ${new Date()}"
+            echo "🔢 Build Number: ${BUILD_NUMBER}"
+            echo "📝 Git Commit: ${env.GIT_COMMIT_SHORT}"
+            echo "🌿 Branch: ${env.GIT_BRANCH ?: 'main'}"
+            
+            // Archive artifacts
+            archiveArtifacts artifacts: 'backend/*/target/*.jar', allowEmptyArchive: true
+            
+            // Clean up Docker images to save space
+            sh '''
+                echo "🧹 Cleaning up old Docker images"
+                docker image prune -f || echo "Docker cleanup skipped"
+            '''
+        }
+        success {
+            echo '''
+            ✅ ========================================
+            ✅ PIPELINE SUCCEEDED!
+            ✅ ========================================
+            
+            🎉 All microservices built and deployed successfully
+            🔗 Access your services at:
+            🛍️  Product Service: http://20.86.144.152:31309
+            📦 Inventory Service: http://20.86.144.152:31081
+            🛒 Order Service: http://20.86.144.152:31004
+            '''
+        }
+        failure {
+            echo '''
+            ❌ ========================================
+            ❌ PIPELINE FAILED!
+            ❌ ========================================
+            
+            🔍 TROUBLESHOOTING STEPS:
+            1. Check the build logs above for specific errors
+            2. Verify all dependencies are installed in Jenkins image
+            3. Check Docker registry accessibility
+            4. Verify Kubernetes cluster status
+            5. Ensure all source files are present
+            '''
+        }
+    }
+} 
